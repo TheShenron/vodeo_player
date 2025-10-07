@@ -2,6 +2,12 @@ import { getTimeSegments } from '../../utils/timeUtils';
 
 export default function TimeLabels({ zoom, viewIndex, width }) {
     const times = getTimeSegments(zoom, viewIndex);
+
+    if (!Array.isArray(times) || times.length < 2) {
+        console.warn("Invalid time segments", times);
+        return null;
+    }
+
     const start = times[0];
     const end = times[times.length - 1];
     const totalMinutes = end.diff(start, 'minutes').minutes;
@@ -19,10 +25,15 @@ export default function TimeLabels({ zoom, viewIndex, width }) {
                     style={{ width: `${segmentWidth}px` }}
                 >
                     {time.minute === 0 ? (
-                        <span>{time.toFormat('H')}</span>
+                        <span>
+                            {(time.hour === 0 && time.minute === 0 && idx === times.length - 1)
+                                ? '24'
+                                : time.toFormat('H')}
+                        </span>
                     ) : (
                         <div class="h-2 w-px bg-gray-400 opacity-40" />
                     )}
+
                 </div>
             ))}
         </div>

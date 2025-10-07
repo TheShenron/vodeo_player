@@ -14,6 +14,12 @@ export default function Timeline({ videos }) {
     const containerRef = useRef(null);
     const { width } = useElementSize(containerRef);
 
+    const [isCutMode, setIsCutMode] = useState(false);
+    const [cutSelections, setCutSelections] = useState([]);
+    const [cutStart, setCutStart] = useState(null);
+
+    const [hoverTime, setHoverTime] = useState(null);
+
     let startHour = 0;
     let endHour = 24;
 
@@ -68,6 +74,42 @@ export default function Timeline({ videos }) {
         setViewIndex((prev) => Math.min(prev + 1, maxViewIndex));
     };
 
+    const handleCut = () => {
+
+    }
+
+
+    function isValidSelection(selection, videos) {
+        return videos.some(video => {
+            const videoStart = DateTime.fromISO(video.start);
+            const videoEnd = DateTime.fromISO(video.end);
+
+            // Normalize times to minutes since midnight
+            const videoStartMin = videoStart.hour * 60 + videoStart.minute;
+            const videoEndMin = videoEnd.hour * 60 + videoEnd.minute;
+
+            // Check if any part of the selection overlaps this video
+            return (
+                (selection.start >= videoStartMin && selection.start < videoEndMin) ||
+                (selection.end > videoStartMin && selection.end <= videoEndMin) ||
+                (selection.start <= videoStartMin && selection.end >= videoEndMin)
+            );
+        });
+    }
+
+    function isValidTimePoint(timeInMinutes, videos) {
+        return videos.some(video => {
+            const videoStart = DateTime.fromISO(video.start);
+            const videoEnd = DateTime.fromISO(video.end);
+
+            const videoStartMin = videoStart.hour * 60 + videoStart.minute;
+            const videoEndMin = videoEnd.hour * 60 + videoEnd.minute;
+
+            return timeInMinutes >= videoStartMin && timeInMinutes < videoEndMin;
+        });
+    }
+
+
     return (
         <div class="w-full overflow-x-auto">
             <div class="flex items-center mb-2 justify-between">
@@ -81,6 +123,34 @@ export default function Timeline({ videos }) {
                     <button onClick={zoomIn} class="bg-gray-200 px-2 py-1 rounded">+</button>
                 </div>
 
+                <div class="flex gap-2">
+                    <button
+                        onClick={() => {
+                            setIsCutMode(prev => !prev);
+                            setCutStart(null); // reset any in-progress selection
+                        }}
+                        class={`bg-${isCutMode ? 'red' : 'gray'}-200 px-2 py-1 rounded`}
+                    >
+                        ✂️ Cut {isCutMode ? '(On)' : '(Off)'}
+                    </button>
+
+                    {isCutMode && (
+                        <button
+                            onClick={() => {
+                                setIsCutMode(false);
+                                setCutStart(null);
+                                setCutSelections([]); // ✅ Clear all cut selections
+
+                            }}
+                            class="bg-yellow-200 px-2 py-1 rounded"
+                        >
+                            ❌ Cancel Cut
+                        </button>
+                    )}
+                </div>
+
+
+
                 <span class="text-sm text-gray-600">
                     Zoom: {zoom} | View: {viewIndex + 1}/{maxViewIndex + 1}
                 </span>
@@ -93,6 +163,66 @@ export default function Timeline({ videos }) {
                     const x = e.clientX - rect.left;
                     const clickedMinutes = viewStart + x / pixelsPerMinute;
                     setSelectedTime(clickedMinutes);
+
+                    if (isCutMode) {
+                        if (!isValidTimePoint(clickedMinutes, videos)) {
+                            alert("Invalid selection: click must be within video area.");
+                            return;
+                        }
+
+                        if (cutStart === null) {
+                            // First valid click
+                            setCutStart(clickedMinutes);
+                        } else {
+                            const newSelection = {
+                                start: Math.min(cutStart, clickedMinutes),
+                                end: Math.max(cutStart, clickedMinutes),
+                            };
+
+                            if (isValidSelection(newSelection, videos)) {
+                                setCutSelections(prev => [...prev, newSelection]);
+                                setCutStart(null);
+                            } else {
+                                alert("Invalid selection: range must be within video area.");
+                                setCutStart(null);
+                            }
+                        }
+                    }
+
+
+
+                    // if (isCutMode) {
+                    //     // Cut Mode Logic
+                    //     if (cutStart === null) {
+                    //         setCutStart(clickedMinutes); // First click
+                    //     } else {
+                    //         const newSelection = {
+                    //             start: Math.min(cutStart, clickedMinutes),
+                    //             end: Math.max(cutStart, clickedMinutes),
+                    //         };
+
+                    //         if (isValidSelection(newSelection, videos)) {
+                    //             setCutSelections(prev => [...prev, newSelection]);
+                    //             setCutStart(null); // reset for next selection
+                    //         } else {
+                    //             // invalid selection
+                    //             alert("Invalid selection: must be within video areas.");
+                    //             setCutStart(null);
+                    //         }
+                    //     }
+                    // } else {
+                    //     // Normal click to set marker
+                    //     // setSelectedTime(clickedMinutes);
+                    // }
+                }}
+                onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const hoveredMinutes = viewStart + x / pixelsPerMinute;
+                    setHoverTime(hoveredMinutes);
+                }}
+                onMouseLeave={() => {
+                    setHoverTime(null);
                 }}
                 class={`relative border border-gray-300 bg-white min-w-[${width}px]`}
             >
@@ -102,6 +232,43 @@ export default function Timeline({ videos }) {
                 {selectedTime !== null && (
                     <Marker selectedTime={selectedTime} viewStart={viewStart} pixelsPerMinute={pixelsPerMinute} />
                 )}
+
+                {cutSelections.map((sel, index) => {
+                    const left = (sel.start - viewStart) * pixelsPerMinute;
+                    const width = (sel.end - sel.start) * pixelsPerMinute;
+
+                    return (
+                        <div
+                            key={index}
+                            class="absolute top-0 h-full bg-blue-200 opacity-50 pointer-events-none"
+                            style={{
+                                left: `${left}px`,
+                                width: `${width}px`
+                            }}
+                        />
+                    );
+                })}
+
+                {hoverTime !== null && (
+                    <>
+                        <div
+                            class="absolute top-0 bottom-0 w-px bg-gray-300 pointer-events-none"
+                            style={{
+                                left: `${(hoverTime - viewStart) * pixelsPerMinute}px`,
+                            }}
+                        />
+                        <div
+                            class="absolute top-0 transform -translate-x-1/2 text-xs text-gray-600 bg-white px-1 border border-gray-300 rounded shadow"
+                            style={{
+                                left: `${(hoverTime - viewStart) * pixelsPerMinute}px`,
+                            }}
+                        >
+                            {DateTime.fromObject({ hour: 0, minute: 0 }).plus({ minutes: hoverTime }).toFormat("HH:mm")}
+                        </div>
+                    </>
+                )}
+
+
             </div>
         </div>
     );

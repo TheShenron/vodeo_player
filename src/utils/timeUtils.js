@@ -28,7 +28,7 @@ export function getTimeSegments(zoom, viewIndex) {
     const end = DateTime.fromObject({ hour: endHour, minute: 0 });
     let current = start;
 
-    while (current < end) {
+    while (current <= end) {
         times.push(current);
         current = current.plus({ minutes: segmentDuration });
     }
