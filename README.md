@@ -1,4 +1,4 @@
-# 🎬 video_player
+# 🎬 video_playback
 
 A minimal yet powerful video player with interactive timeline, zoom, and precise cut/download support.
 
