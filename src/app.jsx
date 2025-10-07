@@ -25,7 +25,7 @@ const sampleVideos = [
 
 export default function App() {
   return (
-    <div class="p-4 border w-[70%] mx-auto mt-10">
+    <div class="p-4 border w-[90%] mx-auto mt-10">
       <h1 class="text-xl font-bold mb-4">Video Timeline</h1>
       <Timeline videos={sampleVideos} />
     </div>
