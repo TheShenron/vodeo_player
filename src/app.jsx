@@ -1,7 +1,6 @@
+import Timeline from "./components/Timeline/Timeline";
+
 // App.js
-
-import Timeline from "./components/Timeline";
-
 const sampleVideos = [
   {
     id: '1',

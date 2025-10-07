@@ -1,9 +1,7 @@
-// components/TimeLabels.js
-import { getTimeSegments } from '../utils/timeUtils';
+import { getTimeSegments } from '../../utils/timeUtils';
 
 export default function TimeLabels({ zoom, viewIndex, width }) {
     const times = getTimeSegments(zoom, viewIndex);
-
     const start = times[0];
     const end = times[times.length - 1];
     const totalMinutes = end.diff(start, 'minutes').minutes;

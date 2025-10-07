@@ -17,7 +17,6 @@ export default function VideoBlocks({ videos, zoom, viewIndex, width }) {
         endHour = startHour + 1;
     }
 
-
     const startMinutes = startHour * 60;
     const endMinutes = endHour * 60;
     const totalDuration = endMinutes - startMinutes;
@@ -31,12 +30,8 @@ export default function VideoBlocks({ videos, zoom, viewIndex, width }) {
                 const videoStartMinutes = start.hour * 60 + start.minute;
                 const videoEndMinutes = end.hour * 60 + end.minute;
 
-                // Skip videos outside current view
-                if (videoEndMinutes <= startMinutes || videoStartMinutes >= endMinutes) {
-                    return null;
-                }
+                if (videoEndMinutes <= startMinutes || videoStartMinutes >= endMinutes) return null;
 
-                // Clamp to view bounds
                 const clampedStart = Math.max(videoStartMinutes, startMinutes);
                 const clampedEnd = Math.min(videoEndMinutes, endMinutes);
                 const duration = clampedEnd - clampedStart;
