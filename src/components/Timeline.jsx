@@ -57,7 +57,8 @@ export default function Timeline({ videos }) {
                 class={`relative border border-gray-300 bg-white min-w-[${width}px]`}
             >
                 <TimeLabels zoom={zoom} viewIndex={viewIndex} width={width} />
-                <VideoBlocks videos={videos} zoom={zoom} viewIndex={viewIndex} />
+                <VideoBlocks videos={videos} zoom={zoom} viewIndex={viewIndex} width={width} />
+
             </div>
         </div>
     );

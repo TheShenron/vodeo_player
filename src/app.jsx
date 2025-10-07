@@ -5,19 +5,19 @@ import Timeline from "./components/Timeline";
 const sampleVideos = [
   {
     id: '1',
-    name: 'Camera 1',
+    name: '1',
     start: '2025-02-23T03:30:00',
-    end: '2025-02-23T04:00:00',
+    end: '2025-02-23T04:10:00',
   },
   {
     id: '2',
-    name: 'Camera 2',
+    name: '2',
     start: '2025-02-23T09:00:00',
     end: '2025-02-23T09:50:00',
   },
   {
     id: '3',
-    name: 'Camera 2',
+    name: '3',
     start: '2025-02-23T06:15:00',
     end: '2025-02-23T06:45:00',
   },
